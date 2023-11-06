@@ -34,5 +34,6 @@ class SerialPort(object):
 
     def read(self) -> bytes:
         if self.serial is not None:
-            return self.serial.read(self.serial.inWaiting())
+            num = max(1, self.serial.inWaiting())
+            return self.serial.read(num)
         return bytes()
