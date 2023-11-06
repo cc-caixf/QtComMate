@@ -28,22 +28,17 @@ class SerialPortReceiveDataThread(QThread):
         return self.thread.is_set()
 
     def run(self):
-        while True:
-            if self.stopped():
-                break
+        while not self.stopped():
             try:
                 data = self.parent.port.read()
                 if data:
                     self.parent.receiveArray.append(data)
                     dataLen = len(data)
                     if self.parent.SerialReceiveHexCheckBox.isChecked():
-                        data_hex = str(binascii.b2a_hex(data))[2:-1]
-                        data_hex_spaced = ' ' + ' '.join([data_hex[i:i+2] for i in range(0, len(data_hex), 2)])
+                        data_hex_spaced = " " + " ".join([f"{b:02x}" for b in data])
                         self.dataReceivedSignal.emit(data_hex_spaced, dataLen)
                     else:
-                        self.dataReceivedSignal.emit(data.decode('iso-8859-1'), dataLen)
-                else:
-                    time.sleep(0.01)
+                        self.dataReceivedSignal.emit(data.decode("utf-8"), dataLen)
             except Exception as e:
                 print(e)
                 continue
@@ -182,6 +177,7 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
             dsrdtr = int(self.SerialHardFlowControlDSRDTRCheckBox.isChecked())
 
             res = self.port.open(port, baudrate, dataBit, checkSum[0], stopBit, xonxoff, rtscts, dsrdtr)
+            self.last_recv_time=0
             if res:
                 self.receiveSerialPortThread = SerialPortReceiveDataThread(self)
                 self.receiveSerialPortThread.dataReceivedSignal.connect(self.readSerialPortDataSignalCb)
@@ -265,11 +261,12 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
         self.receiveByteCountLabel.setText("R:" + str(self.receiveCountSum))
         
         timestamp = ""
-        if self.SerialReceiveTimestampCheckBox.isChecked():
+        if self.SerialReceiveTimestampCheckBox.isChecked() and time.time() - self.last_recv_time > 0.1:
             timestamp = '\n' + datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S.%f')[:-3] + ']\n'
 
         self.SerialReceivePlainTextEdit.moveCursor(QTextCursor.MoveOperation.End)
         self.SerialReceivePlainTextEdit.insertPlainText(timestamp+data)
+        self.last_recv_time = time.time()
 
     def serialReceiveClearPushButtonCb(self):
         self.receiveCountSum = 0
