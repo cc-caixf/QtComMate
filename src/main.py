@@ -28,17 +28,24 @@ class SerialPortReceiveDataThread(QThread):
         return self.thread.is_set()
 
     def run(self):
+        emit_time = 0
+        data = bytes()
         while not self.stopped():
             try:
-                data = self.parent.port.read()
+                data += self.parent.port.read()
                 if data:
-                    self.parent.receiveArray.append(data)
-                    dataLen = len(data)
-                    if self.parent.SerialReceiveHexCheckBox.isChecked():
-                        data_hex_spaced = " " + " ".join([f"{b:02x}" for b in data])
-                        self.dataReceivedSignal.emit(data_hex_spaced, dataLen)
-                    else:
-                        self.dataReceivedSignal.emit(data.decode("utf-8"), dataLen)
+                    if time.time() - emit_time > 0.2:
+                        self.parent.receiveArray.append(data)
+                        dataLen = len(data)
+                        if self.parent.SerialReceiveHexCheckBox.isChecked():
+                            data_hex_spaced = " " + " ".join([f"{b:02x}" for b in data])
+                            self.dataReceivedSignal.emit(data_hex_spaced, dataLen)
+                        else:
+                            self.dataReceivedSignal.emit(data.decode("utf-8"), dataLen)
+                        emit_time = time.time()
+                        data = bytes()
+                else:
+                    emit_time = time.time() 
             except Exception as e:
                 print(e)
                 continue
@@ -261,7 +268,7 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
         self.receiveByteCountLabel.setText("R:" + str(self.receiveCountSum))
         
         timestamp = ""
-        if self.SerialReceiveTimestampCheckBox.isChecked() and time.time() - self.last_recv_time > 0.1:
+        if self.SerialReceiveTimestampCheckBox.isChecked() and time.time() - self.last_recv_time > 0.25:
             timestamp = '\n' + datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S.%f')[:-3] + ']\n'
 
         self.SerialReceivePlainTextEdit.moveCursor(QTextCursor.MoveOperation.End)

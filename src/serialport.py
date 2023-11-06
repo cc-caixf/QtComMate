@@ -8,7 +8,7 @@ class SerialPort(object):
     def open(self, port, baudrate, databit, checkbit, stopbit, xonxoff, rtscts, dsrdtr) -> bool:
         if self.serial is None:
             try:
-                self.serial = serial.Serial(port, baudrate, databit, checkbit, stopbit, 0.1, xonxoff, rtscts, 0, dsrdtr)
+                self.serial = serial.Serial(port, baudrate, databit, checkbit, stopbit, 0.01, xonxoff, rtscts, 0, dsrdtr)
             except Exception as e:
                 print(e)
                 return False
