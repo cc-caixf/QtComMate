@@ -34,7 +34,7 @@ class SerialPortReceiveDataThread(QThread):
             try:
                 data += self.parent.port.read()
                 if data:
-                    if time.time() - emit_time > 0.2:
+                    if time.time() - emit_time > 0.1:
                         self.parent.receiveArray.append(data)
                         dataLen = len(data)
                         if self.parent.SerialReceiveHexCheckBox.isChecked():
@@ -44,8 +44,6 @@ class SerialPortReceiveDataThread(QThread):
                             self.dataReceivedSignal.emit(data.decode("utf-8"), dataLen)
                         emit_time = time.time()
                         data = bytes()
-                else:
-                    emit_time = time.time() 
             except Exception as e:
                 print(e)
                 continue
@@ -268,11 +266,11 @@ class MyPyQT_Form(QMainWindow, Ui_MainWindow):
         self.receiveByteCountLabel.setText("R:" + str(self.receiveCountSum))
         
         timestamp = ""
-        if self.SerialReceiveTimestampCheckBox.isChecked() and time.time() - self.last_recv_time > 0.25:
+        if self.SerialReceiveTimestampCheckBox.isChecked() and time.time() - self.last_recv_time > 0.15:
             timestamp = '\n' + datetime.datetime.now().strftime('[%Y-%m-%d %H:%M:%S.%f')[:-3] + ']\n'
 
-        self.SerialReceivePlainTextEdit.moveCursor(QTextCursor.MoveOperation.End)
         self.SerialReceivePlainTextEdit.insertPlainText(timestamp+data)
+        self.SerialReceivePlainTextEdit.moveCursor(QTextCursor.MoveOperation.End)
         self.last_recv_time = time.time()
 
     def serialReceiveClearPushButtonCb(self):

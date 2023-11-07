@@ -97,7 +97,9 @@ class Ui_MainWindow(object):
         self.SerialReceiveClearPushButton.setObjectName("SerialReceiveClearPushButton")
         self.SerialReceiveFormLayout.setWidget(7, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.SerialReceiveClearPushButton)
         self.gridLayout_2.addLayout(self.SerialReceiveFormLayout, 0, 0, 1, 1)
+        # self.SerialReceivePlainTextEdit = QtWidgets.QTextEdit(self.SerialReceiveGroupBox)
         self.SerialReceivePlainTextEdit = QtWidgets.QPlainTextEdit(self.SerialReceiveGroupBox)
+
         self.SerialReceivePlainTextEdit.setReadOnly(True)
         self.SerialReceivePlainTextEdit.setObjectName("SerialReceivePlainTextEdit")
         self.gridLayout_2.addWidget(self.SerialReceivePlainTextEdit, 0, 1, 1, 1)

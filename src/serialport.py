@@ -17,10 +17,14 @@ class SerialPort(object):
 
     def close(self) -> bool:
         if self.serial is not None:
-            self.serial.close()
-            self.serial = None
-            return True
+                self.serial.reset_output_buffer()
+                self.serial.reset_input_buffer()
+                self.serial.flush()
+                self.serial.close()
+                self.serial = None
+                return True
         return False
+
 
     def isOpen(self) -> bool:
         if self.serial is None:
